@@ -2,6 +2,7 @@
 //
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <cmath>
 #include <conio.h>
@@ -26,6 +27,8 @@ void single_var_function()
     cout << "Input single variable function" << endl;
     string user_expression;
     getline(cin, user_expression);
+    string name = user_expression + ".bmp";
+    string filename = user_expression + ".txt";
 
     T x;
 
@@ -63,13 +66,38 @@ void single_var_function()
     T min = expression.value();
     /*T max = numeric_limits<T>::min();
     T min = numeric_limits<T>::max();*/
+
+    //writting in file
+
+    cout << "Do you want write in file?\n 0 - Yes   1 - No" << endl;
+    bool writeafile;
+    cin >> writeafile;
+    /*if (writeafile)
+    {
+        ofstream fout;
+        fout.open(filename);
+    }*/
+    ofstream fout;
+    fout.open(filename);
+
+
+
     for (x = lower_limit; x < higher_limit; x += step)
     {
         y = expression.value();
+        /*if (writeafile)
+        {
+            fout << x << "   " << y << endl;
+        }*/
+        fout << x << "   " << y << endl;
         if (y > max) max = y;
         if (y < min) min = y;
     }
-
+    /*if (writeafile)
+    {
+        fout.close();
+    }*/
+    fout.close();
 
     unsigned int height, widh;
 
@@ -131,7 +159,7 @@ void single_var_function()
         draw.horiztonal_line_segment(widh / (4 * dx), 3 * widh / (4 * dx), k * N_height / tick_number + height / dy);
     }
 
-    string name =user_expression + ".bmp";
+    
     //name = string::name.substr(0,10);
     //image.save_image(output.bmp);
     image.save_image(name);
