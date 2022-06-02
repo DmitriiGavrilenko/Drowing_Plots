@@ -12,13 +12,47 @@
 //#include "matplotlibcpp.h"
 #include "bitmap-master/bitmap_image.hpp"
 
-
-
 using namespace std;
+
+unsigned int height = 600, width = 800;
+
+void copyletter(string name, int i, int j, int l)
+{
+    bitmap_image image(name);
+    bitmap_image sourceimage("letters.bmp");
+    bitmap_image region;
+    sourceimage.region(20 * i, 20 * j, 20, 20, region);
+    image.copy_from(region, 100 + 20 * l, 100);
+    image.save_image(name);
+}
+
+void drawtext(string text, string name)
+{
+    //bitmap_image image(name);
+    //bitmap_image sourceimage("letters.bmp");
+    
+
+    unsigned int textsize = size(text);
+    //bitmap_image region;
+    unsigned int symbolcode;
+    int i=0, j=0;
+    for (int l = 0; l < textsize; l++)
+    {
+        symbolcode = text[l]-16;
+        j = symbolcode / 16-1;
+        
+        i = symbolcode % 16;
+        //cout << "symbolcode=" << symbolcode << "i=" << i << "j=" << j << endl;
+        copyletter(name, i, j,l);
+        //sourceimage.region(20*i, 20*j, 40, 20, region);
+        //image.copy_from(region, 100+20*l, 100);
+    }
+    //image.save_image(name);
+}
 
 
 template <typename T>
-void single_var_function()
+string single_var_function()
 {
     typedef exprtk::symbol_table<T> symbol_table_t;
     typedef exprtk::expression<T>   expression_t;
@@ -69,9 +103,9 @@ void single_var_function()
 
     //writting in file
 
-    cout << "Do you want write in file?\n 0 - Yes   1 - No" << endl;
-    bool writeafile;
-    cin >> writeafile;
+    //cout << "Do you want write in file?\n 0 - Yes   1 - No" << endl;
+    //bool writeafile;
+    //cin >> writeafile;
     /*if (writeafile)
     {
         ofstream fout;
@@ -99,22 +133,22 @@ void single_var_function()
     }*/
     fout.close();
 
-    unsigned int height, widh;
+    
 
     height = 600;
-    widh = 800;
-    cout << "Input widh" << endl;
-    cin >> widh;
+    width = 800;
+    /*cout << "Input widh" << endl;
+    cin >> width;
     cout << "Input height" << endl;
-    cin >> height;/**/
+    cin >> height;*/
     unsigned int d = 20, dy = 20, dx = 25;
-    dx = (int) dy * widh / height;
+    dx = (int) dy * width / height;
 
 
-    bitmap_image image(widh, height);
+    bitmap_image image(width, height);
     image_drawer draw(image);
     unsigned int N_height = height - height * 2 / dy;
-    unsigned int N_widh = widh - widh * 2 / dx;
+    unsigned int N_widh = width - width * 2 / dx;
     unsigned int i = 0, j = N_height/20;
 
     
@@ -128,7 +162,7 @@ void single_var_function()
 
     T y1, y2;
     int j1, j2;
-    while (i < widh - 2 * widh / dx)
+    while (i < width - 2 * width / dx)
     {
         x = lower_limit + (higher_limit - lower_limit) * i / N_widh;
         y1 = expression.value();
@@ -136,18 +170,18 @@ void single_var_function()
         x = lower_limit + (higher_limit - lower_limit) * (i+1) / N_widh;
         y2 = expression.value();
         j2 = (y2 - min) / (max - min) * N_height + height / dy;
-        draw.line_segment(i + widh / dx, height - j1, i + 1 + widh / dx, height - j2);
+        draw.line_segment(i + width / dx, height - j1, i + 1 + width / dx, height - j2);
         i++;
         //cout << j2 << i << endl;
     }
 
     //axes
-    draw.horiztonal_line_segment(0, widh - widh / (2*dx), height - height / (2 * dy));
-    draw.line_segment(widh - widh / (2 * dx), height - height / (2 * dy), widh - widh / dx, height - 3 * height / (4 * dy));
-    draw.line_segment(widh - widh / (2 * dx), height - height / (2 * dy), widh - widh / dx, height - height / (4 * dy));
-    draw.vertical_line_segment(height / (2 * dy), height, widh / (2 * dx));
-    draw.line_segment(widh / (2 * dx), height / (2 * dy), widh / (4 * dx), 3*height / (4 * dy));
-    draw.line_segment(widh / (2 * dx), height / (2 * dy), 3*widh / (4 * dx), 3 * height / (4 * dy));
+    draw.horiztonal_line_segment(0, width - width / (2*dx), height - height / (2 * dy));
+    draw.line_segment(width - width / (2 * dx), height - height / (2 * dy), width - width / dx, height - 3 * height / (4 * dy));
+    draw.line_segment(width - width / (2 * dx), height - height / (2 * dy), width - width / dx, height - height / (4 * dy));
+    draw.vertical_line_segment(height / (2 * dy), height, width / (2 * dx));
+    draw.line_segment(width / (2 * dx), height / (2 * dy), width / (4 * dx), 3*height / (4 * dy));
+    draw.line_segment(width / (2 * dx), height / (2 * dy), 3*width / (4 * dx), 3 * height / (4 * dy));
 
 
     //ticks
@@ -155,23 +189,24 @@ void single_var_function()
 
     for (int k = 0; k < tick_number + 1; k++)
     {
-        draw.vertical_line_segment(height - height / (4 * dy), height - 3 * height / (4 * dy), k * N_widh / tick_number + widh / dx);
-        draw.horiztonal_line_segment(widh / (4 * dx), 3 * widh / (4 * dx), k * N_height / tick_number + height / dy);
+        draw.vertical_line_segment(height - height / (4 * dy), height - 3 * height / (4 * dy), k * N_widh / tick_number + width / dx);
+        draw.horiztonal_line_segment(width / (4 * dx), 3 * width / (4 * dx), k * N_height / tick_number + height / dy);
     }
 
     
     //name = string::name.substr(0,10);
     //image.save_image(output.bmp);
     image.save_image(name);
-
+    return user_expression;
 }
 
 
 int main()
 {
     //trig_function/*<double>*/();
-    single_var_function<double>();
-    
+    string user_expression = single_var_function<double>();
+    string name = user_expression + ".bmp";
+    drawtext(user_expression, name);
     return 0;
 }
 
