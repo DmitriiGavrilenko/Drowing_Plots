@@ -68,7 +68,14 @@ string numbertotext(double val)
     val = round(abs(val) * pow(10, -digitnumber + 1)) / pow(10, -digitnumber + 1);
     text1 = to_string(val * pow(10, -digitnumber));
     text2 = to_string(digitnumber);
-    text = text1.substr(0, 3) + "*10^" + text2.substr(0, 3);
+    if (digitnumber == 0)
+    {
+        text = text1.substr(0, 3);
+    }
+    else
+    {
+        text = text1.substr(0, 3) + "*10^" + text2.substr(0, 3);
+    }
     if (!sgnm)
     {
         output = "-" + text;
