@@ -14,19 +14,19 @@
 
 using namespace std;
 
-unsigned int height = 600, width = 800;
+unsigned int height = 1080, width = 1620;
 
-void copyletter(string name, int i, int j, int l)
+void copyletter(string name,unsigned int i, unsigned int j, unsigned int x, unsigned int y)
 {
     bitmap_image image(name);
     bitmap_image sourceimage("letters.bmp");
     bitmap_image region;
-    sourceimage.region(20 * i, 20 * j, 20, 20, region);
-    image.copy_from(region, 100 + 20 * l, 100);
+    sourceimage.region(20 * i+2, 20 * j, 16, 20, region);
+    image.copy_from(region, x, y);
     image.save_image(name);
 }
 
-void drawtext(string text, string name)
+void drawtext(string text, string name,unsigned int x, unsigned int y)
 {
     //bitmap_image image(name);
     //bitmap_image sourceimage("letters.bmp");
@@ -43,12 +43,104 @@ void drawtext(string text, string name)
         
         i = symbolcode % 16;
         //cout << "symbolcode=" << symbolcode << "i=" << i << "j=" << j << endl;
-        copyletter(name, i, j,l);
-        //sourceimage.region(20*i, 20*j, 40, 20, region);
-        //image.copy_from(region, 100+20*l, 100);
+        copyletter(name, i, j,x+16*l,y);
     }
     //image.save_image(name);
 }
+
+string numbertotext(double val)
+{
+    int intpart;
+    double fracpart, digitnumber;
+    string text, text1, text2, reducedtext1, reducedtext2, output;
+    bool sgnm;
+    if (val < 0)
+    {
+        sgnm = 0;
+    }
+    else
+    {
+        sgnm = 1;
+    }
+    digitnumber = (int)log10(abs(val));
+    fracpart = modf((log10(abs(val)) + 100), &digitnumber);
+    digitnumber = digitnumber - 100;
+    val = round(abs(val) * pow(10, -digitnumber + 1)) / pow(10, -digitnumber + 1);
+    text1 = to_string(val * pow(10, -digitnumber));
+    text2 = to_string(digitnumber);
+    text = text1.substr(0, 3) + "*10^" + text2.substr(0, 3);
+    if (!sgnm)
+    {
+        output = "-" + text;
+    }
+    else
+    {
+        output = "" + text;
+    }
+    return (output);
+}
+
+void drawticks(string name, unsigned int dx, unsigned int dy, unsigned int N_width, unsigned int N_height, double xmin, double xmax, double ymin, double ymax)
+{
+    bitmap_image image(name);
+    image_drawer draw(image);
+    draw.pen_width(3);
+    draw.pen_color(255, 150, 50);
+    unsigned int tick_number = 6;
+
+    for (int k = 0; k < tick_number + 1; k++)
+    {
+
+        draw.vertical_line_segment(height - height / (4 * dy), height - 3 * height / (4 * dy), k * N_width / tick_number + width / dx);
+        draw.horiztonal_line_segment(width / (4 * dx), 3 * width / (4 * dx), k * N_height / tick_number + height / dy);
+
+    }
+
+
+
+    image.save_image(name);
+
+
+
+    int intpart;
+    double fracpart,val, digitnumber;
+    string text, text1, text2, reducedtext1, reducedtext2,output;
+    bool sgnm;
+
+    for (int k = 0; k < tick_number; k++)
+    {
+        
+        val = (xmax - xmin) * k / tick_number + xmin;
+
+        drawtext(numbertotext(val), name, k * N_width / tick_number + width / dx, height - 3 * height / (4 * dy) - 20);
+
+        val = ymax - (ymax - ymin) * (k + 1) / tick_number;
+        drawtext(numbertotext(val), name, 3 * width / (4 * dx), (k+1) * N_height / tick_number + height / dy-25);
+
+    }
+}
+
+void drawaxes(string name, unsigned int dx, unsigned int dy, unsigned int N_width, unsigned int N_height, double xmin, double xmax, double ymin, double ymax)
+{
+    bitmap_image image(name);
+    image_drawer draw(image);
+    draw.pen_width(3);
+    draw.pen_color(255, 150, 50);
+    draw.horiztonal_line_segment(0, width - width / (2 * dx), height - height / (2 * dy));
+    draw.line_segment(width - width / (2 * dx), height - height / (2 * dy), width - width / dx, height - 3 * height / (4 * dy));
+    draw.line_segment(width - width / (2 * dx), height - height / (2 * dy), width - width / dx, height - height / (4 * dy));
+    draw.vertical_line_segment(height / (2 * dy), height, width / (2 * dx));
+    draw.line_segment(width / (2 * dx), height / (2 * dy), width / (4 * dx), 3 * height / (4 * dy));
+    draw.line_segment(width / (2 * dx), height / (2 * dy), 3 * width / (4 * dx), 3 * height / (4 * dy));
+
+    image.save_image(name);
+
+    drawticks(name, dx, dy, N_width, N_height, xmin, xmax, ymin, ymax);
+
+    copyletter(name, 8, 5, width - width / dx, height - 3 * height / (4 * dy) - 20);
+    copyletter(name, 9, 5, 3 * width / (4 * dx), width / (2 * dx));
+}
+
 
 
 template <typename T>
@@ -133,22 +225,18 @@ string single_var_function()
     }*/
     fout.close();
 
-    
-
-    height = 600;
-    width = 800;
     /*cout << "Input widh" << endl;
     cin >> width;
     cout << "Input height" << endl;
     cin >> height;*/
     unsigned int d = 20, dy = 20, dx = 25;
-    dx = (int) dy * width / height;
+    dx = (unsigned int) dy * width / height;
 
 
     bitmap_image image(width, height);
     image_drawer draw(image);
     unsigned int N_height = height - height * 2 / dy;
-    unsigned int N_widh = width - width * 2 / dx;
+    unsigned int N_width = width - width * 2 / dx;
     unsigned int i = 0, j = N_height/20;
 
     
@@ -164,10 +252,10 @@ string single_var_function()
     int j1, j2;
     while (i < width - 2 * width / dx)
     {
-        x = lower_limit + (higher_limit - lower_limit) * i / N_widh;
+        x = lower_limit + (higher_limit - lower_limit) * i / N_width;
         y1 = expression.value();
         j1 = (y1 - min) / (max - min) * N_height + height / dy;
-        x = lower_limit + (higher_limit - lower_limit) * (i+1) / N_widh;
+        x = lower_limit + (higher_limit - lower_limit) * (i+1) / N_width;
         y2 = expression.value();
         j2 = (y2 - min) / (max - min) * N_height + height / dy;
         draw.line_segment(i + width / dx, height - j1, i + 1 + width / dx, height - j2);
@@ -175,28 +263,11 @@ string single_var_function()
         //cout << j2 << i << endl;
     }
 
-    //axes
-    draw.horiztonal_line_segment(0, width - width / (2*dx), height - height / (2 * dy));
-    draw.line_segment(width - width / (2 * dx), height - height / (2 * dy), width - width / dx, height - 3 * height / (4 * dy));
-    draw.line_segment(width - width / (2 * dx), height - height / (2 * dy), width - width / dx, height - height / (4 * dy));
-    draw.vertical_line_segment(height / (2 * dy), height, width / (2 * dx));
-    draw.line_segment(width / (2 * dx), height / (2 * dy), width / (4 * dx), 3*height / (4 * dy));
-    draw.line_segment(width / (2 * dx), height / (2 * dy), 3*width / (4 * dx), 3 * height / (4 * dy));
-
-
-    //ticks
-    unsigned int tick_number = 6;
-
-    for (int k = 0; k < tick_number + 1; k++)
-    {
-        draw.vertical_line_segment(height - height / (4 * dy), height - 3 * height / (4 * dy), k * N_widh / tick_number + width / dx);
-        draw.horiztonal_line_segment(width / (4 * dx), 3 * width / (4 * dx), k * N_height / tick_number + height / dy);
-    }
-
-    
     //name = string::name.substr(0,10);
     //image.save_image(output.bmp);
     image.save_image(name);
+    drawaxes(name, dx, dy, N_width, N_height, lower_limit, higher_limit, min, max);
+    drawtext(user_expression, name, 500, 100);
     return user_expression;
 }
 
@@ -205,8 +276,8 @@ int main()
 {
     //trig_function/*<double>*/();
     string user_expression = single_var_function<double>();
-    string name = user_expression + ".bmp";
-    drawtext(user_expression, name);
+    //string name = user_expression + ".bmp";
+    //drawtext(user_expression, name, 100, 100);
     return 0;
 }
 
